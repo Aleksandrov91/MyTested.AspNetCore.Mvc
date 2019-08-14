@@ -5,6 +5,7 @@
     using Models;
     using MusicStore.Controllers;
     using MyTested.AspNetCore.Mvc;
+    using System;
     using Xunit;
 
     using HttpMethod = System.Net.Http.HttpMethod;
@@ -212,7 +213,7 @@
         }
 
         [Fact]
-        public void GetVerifyCodeWithUserShouldReturnCorrectView()
+        public void GetVerifyCodeWithValidUserShouldReturnCorrectView()
         {
             var model = new VerifyCodeViewModel
             {
@@ -223,6 +224,8 @@
 
             MyMvc
                 .Controller<AccountController>()
+                .WithHttpRequest(request => request
+                    .WithUser(SignInManagerMock.ValidUser))
                 .Calling(c => c.VerifyCode(model.Provider, model.RememberMe, model.ReturnUrl))
                 .ShouldReturn()
                 .View(model);
@@ -254,7 +257,8 @@
                     .ContainingErrorFor(m => m.Provider))
                 .AndAlso()
                 .ShouldReturn()
-                .View(With.No<VerifyCodeViewModel>());
+                .View(view => view
+                    .WithModelOfType<VerifyCodeViewModel>());
         }
 
         [Fact]
@@ -276,6 +280,24 @@
                 .AndAlso()
                 .ShouldReturn()
                 .View(model);
+        }
+
+        [Fact]
+        public void PostVerifyCodeWithLockedUserShouldReturnView()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void PostVerifyCodeWithIncorrectCodeShouldReturnViewWithModelStateError()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void PostVeryfyCodeWithCorrectDataShouldRedirectToReturnUrl()
+        {
+            throw new NotImplementedException();
         }
 
         [Fact]
@@ -347,6 +369,7 @@
 
             MyMvc
                 .Controller<AccountController>()
+                .WithHttpRequest(request => request.WithScheme(HttpScheme.Http))
                 .Calling(c => c.Register(model))
                 .ShouldReturn()
                 .Redirect(redirect => redirect
