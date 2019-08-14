@@ -5,6 +5,7 @@ using MusicStore.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MusicStore.Test.Mocks
@@ -40,6 +41,20 @@ namespace MusicStore.Test.Mocks
             return Task.FromResult(IdentityResult.Failed(new IdentityError() { Description = "Invalid user" }));
         }
 
+        public override Task<ApplicationUser> GetUserAsync(ClaimsPrincipal principal)
+        {
+            if (principal.Identity.Name == SignInManagerMock.ValidUser)
+            {
+                return Task.FromResult(new ApplicationUser
+                {
+                    UserName = SignInManagerMock.ValidUser,
+                    SecurityStamp = Guid.NewGuid().ToString()
+                });
+            }
+
+            return Task.FromResult<ApplicationUser>(null);
+        }
+
         public override Task<ApplicationUser> FindByIdAsync(string userId)
         {
             if (userId == ValidUserId)
@@ -52,7 +67,7 @@ namespace MusicStore.Test.Mocks
                 });
             }
 
-            return null;
+            return Task.FromResult<ApplicationUser>(null);
         }
 
         public override Task<IdentityResult> ConfirmEmailAsync(ApplicationUser user, string token)

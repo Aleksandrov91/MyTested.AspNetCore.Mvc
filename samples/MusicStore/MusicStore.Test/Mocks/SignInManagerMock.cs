@@ -44,5 +44,25 @@
 
             return Task.FromResult(SignInResult.Failed);
         }
+
+        public override Task<ApplicationUser> GetTwoFactorAuthenticationUserAsync() => UserManager.GetUserAsync(Context.User);
+
+
+        public override Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
+        {
+            const string Provider = "TestProvider";
+            const string Code = "TestCode";
+
+            if (provider != Provider)
+            {
+                return Task.FromResult(SignInResult.LockedOut);
+            }
+            else if (code != Code)
+            {
+                return Task.FromResult(SignInResult.Failed);
+            }
+
+            return Task.FromResult(SignInResult.Success);
+        }
     }
 }
