@@ -19,6 +19,7 @@
             base.ConfigureServices(services);
             
             services.ReplaceSingleton<SignInManager<ApplicationUser>, SignInManagerMock>();
+            services.ReplaceSingleton<UserManager<ApplicationUser>, UserManagerMock>();
         }
     }
 }
