@@ -10,6 +10,8 @@
 
     public class SignInManagerMock : SignInManager<ApplicationUser>
     {
+        private static int FailedTwoFactorSignInCount = 0;
+
         internal const string ValidUser = "Valid@valid.com";
         internal const string TwoFactorRequired = "TwoFactor@invalid.com";
         internal const string LockedOutUser = "Locked@invalid.com";
@@ -50,19 +52,23 @@
 
         public override Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
         {
-            const string Provider = "TestProvider";
-            const string Code = "TestCode";
+            const string SuccessProvider = "SuccessProvider";
+            const string SuccessCode = "SuccessCode";
+            const int FailedTwoFactorSignInLimitCount = 5;
 
-            if (provider != Provider)
+            if (FailedTwoFactorSignInCount == FailedTwoFactorSignInLimitCount)
             {
                 return Task.FromResult(SignInResult.LockedOut);
             }
-            else if (code != Code)
+
+            if (provider == SuccessProvider && code == SuccessCode)
             {
-                return Task.FromResult(SignInResult.Failed);
+                return Task.FromResult(SignInResult.Success);
             }
 
-            return Task.FromResult(SignInResult.Success);
+            FailedTwoFactorSignInCount++;
+
+            return Task.FromResult(SignInResult.Failed);
         }
     }
 }
