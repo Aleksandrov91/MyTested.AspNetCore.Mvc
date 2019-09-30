@@ -134,6 +134,35 @@
                 });
         }
 
+        [Fact]
+        public void RemoveInvalidItemFromCartShouldReturnErrorMessage()
+        {
+            var cartId = "CartId_А";
+            var numberOfItem = 5;
+            var unitPrice = 10;
+
+            MyMvc
+                .Controller<ShoppingCartController>()
+                .WithSession(session => session.WithEntry("Session", cartId))
+                .WithData(db => db
+                    .WithEntities(entities =>
+                    {
+                        var cartItems = CreateTestCartItems(cartId, unitPrice, numberOfItem);
+                        entities.AddRange(cartItems.Select(n => n.Album).Distinct());
+                        entities.AddRange(cartItems);
+                    }))
+                .Calling(c => c.RemoveFromCart(8, CancellationToken.None))
+                .ShouldReturn()
+                .Json(json => json
+                    .WithModelOfType<ShoppingCartRemoveViewModel>()
+                    .Passing(model =>
+                    {
+                        Assert.Equal(numberOfItem, model.CartCount);
+                        Assert.Equal((numberOfItem) * 10, model.CartTotal);
+                        Assert.Equal("Could not find this item, nothing has been removed from your shopping cart.", model.Message);
+                    }));
+        }
+
         private static CartItem[] CreateTestCartItems(string cartId, decimal itemPrice, int numberOfItem)
         {
             var albums = CreateTestAlbums(itemPrice);
